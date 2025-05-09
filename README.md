@@ -209,5 +209,5 @@ Customer and product performance analysis
 These insights can assist in data-driven decisions for inventory, marketing, and operations.
 
 
-## Author - Zero Analyst
+## Reference - Zero Analyst
 
