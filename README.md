@@ -6,21 +6,21 @@
 **Level**: Beginner  
 **Database**: `p1_retail_db`
 
-This project is designed to demonstrate SQL skills and techniques typically used by data analysts to explore, clean, and analyze retail sales data. The project involves setting up a retail sales database, performing exploratory data analysis (EDA), and answering specific business questions through SQL queries. This project is ideal for those who are starting their journey in data analysis and want to build a solid foundation in SQL.
+This project demonstrates essential SQL skills used in retail sales analytics. It guides beginners through database setup, data cleaning, exploratory analysis, and solving real business problems using SQL queries. The goal is to help aspiring data analysts gain practical SQL experience by working on a structured and meaningful dataset.
 
 ## Objectives
 
-1. **Set up a retail sales database**: Create and populate a retail sales database with the provided sales data.
-2. **Data Cleaning**: Identify and remove any records with missing or null values.
-3. **Exploratory Data Analysis (EDA)**: Perform basic exploratory data analysis to understand the dataset.
-4. **Business Analysis**: Use SQL to answer specific business questions and derive insights from the sales data.
+1. **Set up a retail sales database**: CrCreate and populate a retail sales database..
+2. **Data Cleaning**: Identify and handle missing values..
+3. **Exploratory Data Analysis (EDA)**: Understand patterns in the dataset.
+4. **Business Analysis**: Use SQL to answer relevant business questions.
 
 ## Project Structure
 
 ### 1. Database Setup
 
-- **Database Creation**: The project starts by creating a database named `p1_retail_db`.
-- **Table Creation**: A table named `retail_sales` is created to store the sales data. The table structure includes columns for transaction ID, sale date, sale time, customer ID, gender, age, product category, quantity sold, price per unit, cost of goods sold (COGS), and total sale amount.
+- **Create Database**: Initialize a new database `p1_retail_db`.
+- **Table Creation**: Define a retail_sales table with necessary columns for sales transactions. The table structure includes columns for transaction ID, sale date, sale time, customer ID, gender, age, product category, quantity sold, price per unit, cost of goods sold (COGS), and total sale amount.
 
 ```sql
 CREATE DATABASE p1_retail_db;
@@ -79,15 +79,11 @@ WHERE sale_date = '2022-11-05';
 
 2. **Write a SQL query to retrieve all transactions where the category is 'Clothing' and the quantity sold is more than 4 in the month of Nov-2022**:
 ```sql
-SELECT 
-  *
+SELECT * 
 FROM retail_sales
-WHERE 
-    category = 'Clothing'
-    AND 
-    TO_CHAR(sale_date, 'YYYY-MM') = '2022-11'
-    AND
-    quantity >= 4
+WHERE category = 'Clothing'
+  AND sale_date LIKE '2022-11%' 
+  AND quantity >= 4;
 ```
 
 3. **Write a SQL query to calculate the total sales (total_sale) for each category.**:
@@ -131,20 +127,24 @@ ORDER BY 1
 7. **Write a SQL query to calculate the average sale for each month. Find out best selling month in each year**:
 ```sql
 SELECT 
-       year,
-       month,
+    year,
+    month,
     avg_sale
-FROM 
-(    
-SELECT 
-    EXTRACT(YEAR FROM sale_date) as year,
-    EXTRACT(MONTH FROM sale_date) as month,
-    AVG(total_sale) as avg_sale,
-    RANK() OVER(PARTITION BY EXTRACT(YEAR FROM sale_date) ORDER BY AVG(total_sale) DESC) as rank
-FROM retail_sales
-GROUP BY 1, 2
-) as t1
-WHERE rank = 1
+FROM (
+    SELECT 
+        YEAR(sale_date) AS year,
+        MONTH(sale_date) AS month,
+        AVG(total_sale) AS avg_sale,
+        RANK() OVER (
+            PARTITION BY YEAR(sale_date)
+            ORDER BY AVG(total_sale) DESC
+        ) AS rnk
+    FROM retail_sales
+    GROUP BY YEAR(sale_date), MONTH(sale_date)
+) AS ranked_months
+WHERE rnk = 1
+ORDER BY year
+
 ```
 
 8. **Write a SQL query to find the top 5 customers based on the highest total sales **:
@@ -169,22 +169,19 @@ GROUP BY category
 
 10. **Write a SQL query to create each shift and number of orders (Example Morning <12, Afternoon Between 12 & 17, Evening >17)**:
 ```sql
-WITH hourly_sale
-AS
-(
-SELECT *,
-    CASE
-        WHEN EXTRACT(HOUR FROM sale_time) < 12 THEN 'Morning'
-        WHEN EXTRACT(HOUR FROM sale_time) BETWEEN 12 AND 17 THEN 'Afternoon'
-        ELSE 'Evening'
-    END as shift
-FROM retail_sales
+with hourly as(
+select*,
+ case 
+  when HOUR(sale_time) < 12 then "Morning"
+  when HOUR(sale_time) between 12 and 17 then "Afternoon"
+  else "evening"
+  end as shift
+  from retail_sales
 )
-SELECT 
-    shift,
-    COUNT(*) as total_orders    
-FROM hourly_sale
-GROUP BY shift
+select shift,
+count(*) as total_orsers
+from hourly
+group by shift
 ```
 
 ## Findings
@@ -193,23 +190,24 @@ GROUP BY shift
 - **High-Value Transactions**: Several transactions had a total sale amount greater than 1000, indicating premium purchases.
 - **Sales Trends**: Monthly analysis shows variations in sales, helping identify peak seasons.
 - **Customer Insights**: The analysis identifies the top-spending customers and the most popular product categories.
+- **Shift Patterns**: Peak sales occur during specific times of the day, highlighting optimal staffing windows
+
 
 ## Reports
 
-- **Sales Summary**: A detailed report summarizing total sales, customer demographics, and category performance.
-- **Trend Analysis**: Insights into sales trends across different months and shifts.
-- **Customer Insights**: Reports on top customers and unique customer counts per category.
-
+- **Sales Summary**: Overview of total sales by category, date, and customer.
+- **Trend Analysis**: Monthly and shift-based sales insights.
+- **Customer Insights**: Top customers and segment-specific trends.
+ 
 ## Conclusion
 
-This project serves as a comprehensive introduction to SQL for data analysts, covering database setup, data cleaning, exploratory data analysis, and business-driven SQL queries. The findings from this project can help drive business decisions by understanding sales patterns, customer behavior, and product performance.
+This beginner-level project helps build foundational SQL skills while solving real retail business problems. It covers:
+Database creation
+Data exploration and cleaning
+Sales pattern analysis
+Customer and product performance analysis
+These insights can assist in data-driven decisions for inventory, marketing, and operations.
 
-## How to Use
-
-1. **Clone the Repository**: Clone this project repository from GitHub.
-2. **Set Up the Database**: Run the SQL scripts provided in the `database_setup.sql` file to create and populate the database.
-3. **Run the Queries**: Use the SQL queries provided in the `analysis_queries.sql` file to perform your analysis.
-4. **Explore and Modify**: Feel free to modify the queries to explore different aspects of the dataset or answer additional business questions.
 
 ## Author - Zero Analyst
 
